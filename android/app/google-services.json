@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "666625306407",
+    "firebase_url": "https://lay-test-e68fd-default-rtdb.firebaseio.com",
+    "project_id": "lay-test-e68fd",
+    "storage_bucket": "lay-test-e68fd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666625306407:android:6221757ba5f54936350302",
+        "android_client_info": {
+          "package_name": "com.lay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "666625306407-ckqaatdncesc93h9fv22l5n9sq12pk0i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lay",
+            "certificate_hash": "a41fc6ad3a032f0edf7f6165d7228f73bdcdded1"
+          }
+        },
+        {
+          "client_id": "666625306407-qojs9aa1mbmsoa5s1b1dnknje26dk68t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBI6KndGljdGZqEpXvqmo4WCbn2ntJdY7Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "666625306407-qojs9aa1mbmsoa5s1b1dnknje26dk68t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "666625306407-s0n9o5fntculg6mn0t6hiu98qjmgsprg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "host.exp.exponent"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

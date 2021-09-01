@@ -6,11 +6,11 @@ import { ImageBackground, StyleSheet } from 'react-native';
 
 const image = require('../../assets/img/landing.jpg');
 
-export default function Loading() {
+export default function Loading({ navigation }) {
   useEffect(() => {
     // auth().onAuthStateChanged((user) => {
     //   console.log('user', user);
-    //   navigation.navigate(user ? 'Main' : 'Auth');
+    navigation.navigate('Auth');
     // });
   }, []);
 
