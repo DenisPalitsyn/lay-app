@@ -2,16 +2,15 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ImageBackground, StyleSheet } from 'react-native';
-// import auth from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth';
 
 const image = require('../../assets/img/landing.jpg');
 
 export default function Loading({ navigation }) {
   useEffect(() => {
-    // auth().onAuthStateChanged((user) => {
-    //   console.log('user', user);
-    navigation.navigate('Auth');
-    // });
+    auth().onAuthStateChanged((user) => {
+      navigation.navigate(user ? 'Main' : 'Auth');
+    });
   }, []);
 
   return (

@@ -1,29 +1,28 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   HelperText, Button, TextInput, useTheme, Text,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-// import {validateEmail} from "../../utils/validation";
-// import {signInWithEmailAndPassword, signInWithGoogle} from "../../store/actions/authActions";
-// import {useDispatch} from "react-redux";
-// import { useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { validateEmail } from '../../utils/validation';
+import { signInWithEmailAndPassword } from '../../store/actions/authActions';
 // import {
 // GoogleSigninButton } from '@react-native-google-signin/google-signin/src/GoogleSigninButton';
-// import { LocalisationContext } from '../../localisation/context';
+import { LocalisationContext } from '../../localisation/context';
 // import { signInWithGoogle } from '../../store/actions/authActions';
 
 export default function Login({ navigation }) {
-  // const {
-  //   wrongPassword,
-  //   tooManyRequests,
-  //   userNotFound,
-  //   emailIsIncorrect,
-  //   textFieldErrorText,
-  //   signInWithGoogle: signInWithGoogleText,
-  // } = useContext(LocalisationContext);
-  //
-  // const dispatch = useDispatch();
+  const {
+    wrongPassword,
+    tooManyRequests,
+    userNotFound,
+    emailIsIncorrect,
+    textFieldErrorText,
+    // signInWithGoogle: signInWithGoogleText,
+  } = useContext(LocalisationContext);
+
+  const dispatch = useDispatch();
   const theme = useTheme();
 
   const [values, setValues] = useState({
@@ -47,39 +46,38 @@ export default function Login({ navigation }) {
     setErrors(initialErrors);
   };
 
-  // const errorHandler = (text, id) => {
-  //   setErrors({
-  //     ...initialErrors,
-  //     [id]: text,
-  //   });
-  // };
+  const errorHandler = (text, id) => {
+    setErrors({
+      ...initialErrors,
+      [id]: text,
+    });
+  };
 
   const logInHandler = async () => {
-    navigation.navigate('Main');
-    // const {email, password} = values;
-    // const emailIsCorrect = validateEmail(email);
-    // const passwordIsCorrect = !!password;
-    //
-    // if (!emailIsCorrect) {
-    //     return errorHandler(emailIsIncorrect, 'email');
-    // }
-    //
-    // if (!passwordIsCorrect) {
-    //     return errorHandler(textFieldErrorText.password, 'password');
-    // }
-    //
-    // try {
-    //     await dispatch(signInWithEmailAndPassword(email, password));
-    // } catch (e) {
-    //     if (e.code === 'auth/wrong-password') {
-    //         return errorHandler(wrongPassword, 'password');
-    //     } else if (e.code === 'auth/too-many-requests') {
-    //         return errorHandler(tooManyRequests, 'common');
-    //     } else if (e.code === 'auth/user-not-found') {
-    //         return errorHandler(userNotFound, 'common');
-    //     }
-    //     return errorHandler(e.message, 'common');
-    // }
+    const { email, password } = values;
+    const emailIsCorrect = validateEmail(email);
+    const passwordIsCorrect = !!password;
+
+    if (!emailIsCorrect) {
+      return errorHandler(emailIsIncorrect, 'email');
+    }
+
+    if (!passwordIsCorrect) {
+      return errorHandler(textFieldErrorText.password, 'password');
+    }
+
+    try {
+      return dispatch(signInWithEmailAndPassword(email, password));
+    } catch (e) {
+      if (e.code === 'auth/wrong-password') {
+        return errorHandler(wrongPassword, 'password');
+      } if (e.code === 'auth/too-many-requests') {
+        return errorHandler(tooManyRequests, 'common');
+      } if (e.code === 'auth/user-not-found') {
+        return errorHandler(userNotFound, 'common');
+      }
+      return errorHandler(e.message, 'common');
+    }
   };
 
   // const googleHandler = async () => {

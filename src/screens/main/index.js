@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { Button } from 'react-native-paper';
+import { logout } from '../../store/actions/authActions';
 // import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 // import NavigationContainer from "@react-navigation/native/src/NavigationContainer";
 // import Profile from "./profile";
@@ -39,10 +42,11 @@ import { View, Text } from 'react-native';
 export default function Main() {
   // const theme = useTheme();
   // const userId = firebase.auth().currentUser.uid;
+  const dispatch = useDispatch();
 
   return (
     <View>
-      <Text>Profile</Text>
+      <Button onPress={() => dispatch(logout())}>Logout</Button>
     </View>
     // <RootNavigationContext.Provider value={{rootNavigation}}>
     //   <NavigationContainer>
