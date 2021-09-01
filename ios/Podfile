@@ -12,6 +12,8 @@ target 'lay' do
     :hermes_enabled => false
   )
 
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   target 'layTests' do
     inherit! :complete
     # Pods for testing
