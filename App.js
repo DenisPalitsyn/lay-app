@@ -14,7 +14,7 @@ import rootReducer from './src/store/reducers/rootReducer';
 import { initialState } from './src/constants/initialState';
 
 GoogleSignin.configure({
-  webClientId: '666625306407-qojs9aa1mbmsoa5s1b1dnknje26dk68t.apps.googleusercontent.com'
+  webClientId: '666625306407-qojs9aa1mbmsoa5s1b1dnknje26dk68t.apps.googleusercontent.com',
 });
 
 const App = () => {

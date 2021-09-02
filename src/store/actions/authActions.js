@@ -102,6 +102,10 @@ export const signInWithGoogle = async () => {
 export const logout = () => async (dispatch) => {
   dispatch({ type: 'LOGOUT_IN_PROGRESS' });
 
+  if (await GoogleSignin.isSignedIn()) {
+    await GoogleSignin.revokeAccess();
+    await GoogleSignin.signOut();
+  }
   await auth().signOut().then(() => {
     console.log('User is signed out!');
   });

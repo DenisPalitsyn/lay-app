@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import {
   Button, HelperText, Text, TextInput, useTheme,
@@ -7,18 +7,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // import {validateEmail, validatePassword} from "../../utils/validation";
 // import {signInWithGoogle, signUpWithEmailAndPassword} from "../../store/actions/authActions";
 // import {useDispatch} from "react-redux";
-import { LocalisationContext } from '../../localisation/context';
+// import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
+// import { LocalisationContext } from '../../localisation/context';
+// import { signInWithGoogle } from '../../store/actions/authActions';
 
 export default function SignUp({ navigation }) {
-  const {
-    // emailIsIncorrect,
-    // textFieldErrorText,
-    // confirmPasswordsError,
-    // emailAlreadyInUse,
-    signInWithGoogle: signInWithGoogleText,
-  } = useContext(LocalisationContext);
-    //
-    // const dispatch = useDispatch();
+  // const {
+  //   // emailIsIncorrect,
+  //   // textFieldErrorText,
+  //   // confirmPasswordsError,
+  //   // emailAlreadyInUse,
+  // } = useContext(LocalisationContext);
+  //
+  // const dispatch = useDispatch();
   const theme = useTheme();
 
   const [values, setValues] = useState({
@@ -35,6 +36,7 @@ export default function SignUp({ navigation }) {
   const [errors, setErrors] = useState(initialErrors);
   const [securePassword, setSecurePassword] = useState(true);
   const [secureConfirm, setSecureConfirm] = useState(true);
+  // const [isSigninInProgress, setIsSigninInProgress] = useState(false);
 
   const inputHandler = (text, id) => {
     setValues({
@@ -79,13 +81,16 @@ export default function SignUp({ navigation }) {
     // }
   };
 
-  const googleHandler = async () => {
-    // try {
-    //     await dispatch(signInWithGoogle());
-    // } catch (e) {
-    //     return errorHandler(e.message, 'common');
-    // }
-  };
+  // const googleHandler = async () => {
+  //   setIsSigninInProgress(true);
+  //   try {
+  //     errorHandler();
+  //     await signInWithGoogle();
+  //   } catch (e) {
+  //     errorHandler(e.message, 'common');
+  //   }
+  //   setIsSigninInProgress(false);
+  // };
 
   const logInLink = () => {
     navigation.navigate('Login');
@@ -93,9 +98,15 @@ export default function SignUp({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.action}>
-        <Button onPress={googleHandler}>{signInWithGoogleText}</Button>
-      </View>
+      {/*<View style={styles.action}>*/}
+      {/*  <GoogleSigninButton*/}
+      {/*    style={{ width: '100%', height: 48 }}*/}
+      {/*    size={GoogleSigninButton.Size.Wide}*/}
+      {/*    color={GoogleSigninButton.Color.Dark}*/}
+      {/*    onPress={googleHandler}*/}
+      {/*    disabled={isSigninInProgress}*/}
+      {/*  />*/}
+      {/*</View>*/}
       <View style={styles.action}>
         <TextInput
           style={styles.input}

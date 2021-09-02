@@ -46,7 +46,7 @@ export default function Main() {
 
   return (
     <View>
-      <Button onPress={() => dispatch(logout())}>Logout</Button>
+      <Button onPress={async () => dispatch(logout())}>Logout</Button>
     </View>
     // <RootNavigationContext.Provider value={{rootNavigation}}>
     //   <NavigationContainer>

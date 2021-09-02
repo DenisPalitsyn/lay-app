@@ -8,14 +8,14 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:666625306407:android:6221757ba5f54936350302",
+        "mobilesdk_app_id": "1:666625306407:android:515e0aa493185949350302",
         "android_client_info": {
           "package_name": "com.lay"
         }
       },
       "oauth_client": [
         {
-          "client_id": "666625306407-ckqaatdncesc93h9fv22l5n9sq12pk0i.apps.googleusercontent.com",
+          "client_id": "666625306407-826pui5li1pv083oo4dkal59e3uq229q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.lay",

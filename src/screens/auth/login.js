@@ -17,7 +17,6 @@ export default function Login({ navigation }) {
     userNotFound,
     emailIsIncorrect,
     textFieldErrorText,
-    // signInWithGoogle: signInWithGoogleText,
   } = useContext(LocalisationContext);
 
   const dispatch = useDispatch();
@@ -65,6 +64,7 @@ export default function Login({ navigation }) {
     }
 
     try {
+      errorHandler();
       return dispatch(signInWithEmailAndPassword(email, password));
     } catch (e) {
       if (e.code === 'auth/wrong-password') {
@@ -81,8 +81,8 @@ export default function Login({ navigation }) {
   const googleHandler = async () => {
     setIsSigninInProgress(true);
     try {
-      const user = await signInWithGoogle();
-      console.log('user', user);
+      errorHandler();
+      await signInWithGoogle();
     } catch (e) {
       errorHandler(e.message, 'common');
     }
