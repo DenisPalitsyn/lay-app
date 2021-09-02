@@ -5,12 +5,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { validateEmail } from '../../utils/validation';
-import { signInWithEmailAndPassword } from '../../store/actions/authActions';
-// import {
-// GoogleSigninButton } from '@react-native-google-signin/google-signin/src/GoogleSigninButton';
+import { signInWithEmailAndPassword, signInWithGoogle } from '../../store/actions/authActions';
 import { LocalisationContext } from '../../localisation/context';
-// import { signInWithGoogle } from '../../store/actions/authActions';
 
 export default function Login({ navigation }) {
   const {
@@ -36,7 +34,7 @@ export default function Login({ navigation }) {
   };
   const [errors, setErrors] = useState(initialErrors);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
-  // const [isSigninInProgress, setIsSigninInProgress] = useState(false);
+  const [isSigninInProgress, setIsSigninInProgress] = useState(false);
 
   const inputHandler = (text, id) => {
     setValues({
@@ -80,16 +78,16 @@ export default function Login({ navigation }) {
     }
   };
 
-  // const googleHandler = async () => {
-  //   setIsSigninInProgress(true);
-  //   try {
-  //     const user = await signInWithGoogle();
-  //     console.log('user', user);
-  //   } catch (e) {
-  //     errorHandler(e.message, 'common');
-  //   }
-  //   setIsSigninInProgress(false);
-  // };
+  const googleHandler = async () => {
+    setIsSigninInProgress(true);
+    try {
+      const user = await signInWithGoogle();
+      console.log('user', user);
+    } catch (e) {
+      errorHandler(e.message, 'common');
+    }
+    setIsSigninInProgress(false);
+  };
 
   const signUpLink = () => {
     navigation.navigate('SignUp');
@@ -97,15 +95,15 @@ export default function Login({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <View style={styles.action}> */}
-      {/*  <GoogleSigninButton */}
-      {/*    style={{ width: '100%', height: 48 }} */}
-      {/*    size={GoogleSigninButton.Size.Wide} */}
-      {/*    color={GoogleSigninButton.Color.Dark} */}
-      {/*    onPress={googleHandler} */}
-      {/*    disabled={isSigninInProgress} */}
-      {/*  /> */}
-      {/* </View> */}
+      <View style={styles.action}>
+        <GoogleSigninButton
+          style={{ width: '100%', height: 48 }}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={googleHandler}
+          disabled={isSigninInProgress}
+        />
+      </View>
       <View style={styles.action}>
         <TextInput
           style={styles.input}

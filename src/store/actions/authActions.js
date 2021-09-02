@@ -1,5 +1,5 @@
 import auth from '@react-native-firebase/auth';
-// import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 export const signInWithEmailAndPassword = (email, password) => async (dispatch) => {
   dispatch({ type: 'SIGN_IN_WITH_EMAIL_AND_PASSWORD_IN_PROGRESS' });
@@ -50,15 +50,11 @@ export const signInWithEmailAndPassword = (email, password) => async (dispatch) 
 // };
 
 export const signInWithGoogle = async () => {
-  // const { idToken } = await GoogleSignin.signIn();
-  //
-  // console.log('idToken', idToken);
-  //
-  // const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-  //
-  // console.log('googleCredential', googleCredential);
-  //
-  // return auth().signInWithCredential(googleCredential);
+  const { idToken } = await GoogleSignin.signIn();
+
+  const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+  return auth().signInWithCredential(googleCredential);
 };
 
 // export const signUpWithEmailAndPassword = (email, password) => async (dispatch, getState) => {
