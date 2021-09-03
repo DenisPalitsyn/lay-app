@@ -38,9 +38,13 @@ export const getProfileTabData = (profile, contentType, contextOptions, lang = '
 
           const getValue = (options) => {
             if (Array.isArray(profile[item])) {
-              return profile[item].map((item) => options.find((option) => option.value === item)?.title)
+              return profile[item].map((item) => {
+                const option  = options.find((option) => option.value === item);
+                return option ? option.title : null;
+              })
             }
-            return options.find((option) => option.value === value)?.title
+            const option = options.find((option) => option.value === value);
+            return option ? option.title : null;
           }
 
           if (item === 'lookingFor') {
@@ -93,7 +97,7 @@ export const getAgeValue = (timestamp) => {
   age = today.getFullYear() - dateOfBirth.getFullYear();
 
   if (today < dateOfBirth) {
-    age = age - 1;
+    age -= - 1;
   }
 
   return age || '';

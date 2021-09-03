@@ -1,8 +1,11 @@
-// import {profileData} from "../../constants/profile";
-// import {convertDateToTimestamp} from "../../utils/profile";
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import storage from '@react-native-firebase/storage';
+import { profileData } from '../../constants/profile';
+import {convertDateToTimestamp} from "../../utils/profile";
 // import {initPhotoObj} from "../../constants/initialState";
-// import {getAllUsers, getUser} from "./usersActions";
-// import ImageResizer from 'react-native-image-resizer';
+import { getAllUsers, getUser } from './usersActions';
+import ImageResizer from 'react-native-image-resizer';
 // // import mixpanel from "mixpanel-browser";
 // import firebase from "firebase/app";
 // // import RNFetchBlob from 'rn-fetch-blob';
@@ -23,34 +26,29 @@
 //       dispatch({type: 'SAVE_ROLE_ERROR'});
 //     });
 // };
-//
-// export const getProfileData = (uid) => (dispatch, getState) => {
-//   const db = firebase.firestore();
-//   const state = getState();
-//   const users = getAllUsers(state);
-//   const user = users[uid];
-//   const isUserExists = user !== undefined;
-//
-//   if (isUserExists) {
-//     return user;
-//   } else {
-//     return db.collection('users').doc(uid)
-//       .get()
-//       .then(async (doc) => {
-//         if (doc.exists) {
-//           const profile = doc.data();
-//           dispatch({type: 'GET_PROFILE_DATA_SUCCESS', data: {profile, uid}});
-//           return profile;
-//         }
-//         return profileData;
-//       }).catch((err) => {
-//         console.log(err);
-//         return profileData;
-//         // dispatch({type: 'GET_PROFILE_DATA_ERROR'});
-//       });
-//   }
-// };
-//
+
+export const getProfileData = (uid) => (dispatch, getState) => {
+  const users = getAllUsers(getState());
+  const user = users[uid];
+
+  if (user) return user;
+
+  return firestore().collection('users').doc(uid)
+    .get()
+    .then(async (doc) => {
+      if (doc.exists) {
+        const profile = doc.data();
+        dispatch({ type: 'GET_PROFILE_DATA_SUCCESS', data: { profile, uid } });
+        return profile;
+      }
+      return profileData;
+    })
+    .catch((err) => {
+      console.log(err);
+      return profileData;
+    });
+};
+
 // export const getPhotosUrl = async (
 //   firebase,
 //   photos,
@@ -134,202 +132,202 @@
 //   return [];
 // }
 //
-// export const saveProfileData = (formData) => async (dispatch) => {
-//   dispatch({type: 'SAVE_PROFILE_DATA_IN_PROGRESS'});
-//
-//   const storageRef = firebase.storage().ref();
-//
-//   const db = firebase.firestore();
-//   const {uid} = firebase.auth().currentUser;
-//
-//   const newFormData = {
-//     ...formData,
-//     dateOfBirth: convertDateToTimestamp(formData['birthday'])
-//   };
-//
-//   const uploadTasks$ = newFormData.photos.map(async (photo, index) => {
-//     const subFolderName = photo.isPrivate ? 'private' : 'public';
-//     const photoIsExist = !photo.file && (photo.path?.split('/')[1] === subFolderName);
-//     let fullPath,
-//       fullPathXS,
-//       fullPathS,
-//       fullPathM,
-//       fullPathL;
-//
-//     if (!photoIsExist) {
-//       if (photo.file) {
-//         fullPath = `${uid}/${subFolderName}/${photo.file.name}`;
-//         fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.file.name}`;
-//         fullPathS = `${uid}/${subFolderName}/S_shape_${photo.file.name}`;
-//         fullPathM = `${uid}/${subFolderName}/M_shape_${photo.file.name}`;
-//         fullPathL = `${uid}/${subFolderName}/L_shape_${photo.file.name}`;
-//       } else {
-//         fullPath = `${uid}/${subFolderName}/${photo.path?.split('/')[2]}`;
-//         fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.path?.split('/')[2]}`;
-//         fullPathS = `${uid}/${subFolderName}/S_shape_${photo.path?.split('/')[2]}`;
-//         fullPathM = `${uid}/${subFolderName}/M_shape_${photo.path?.split('/')[2]}`;
-//         fullPathL = `${uid}/${subFolderName}/L_shape_${photo.path?.split('/')[2]}`;
-//       }
-//     } else {
-//       fullPath = photo.path;
-//       // fullPathXS = photo.pathXS;
-//       fullPathS = photo.pathS;
-//       fullPathM = photo.pathM;
-//       fullPathL = photo.pathL;
-//     }
-//
-//     if (photoIsExist) {
-//       dispatch({type: 'UPDATE_FILE_UPLOAD', data: {index, progress: 100}});
-//       return Promise.resolve();
-//     }
-//
-//     const compression = async (size) => {
-//       const photoUrl = URL.createObjectURL(photo.file);
-//       let maxWidth, maxHeight;
-//       switch (size) {
-//         case 'XS':
-//           maxWidth = 37;
-//           maxHeight = 37;
-//           break;
-//         case 'S':
-//           maxWidth = 70;
-//           maxHeight = 70;
-//           break;
-//         case 'M':
-//           maxWidth = 116;
-//           maxHeight = 116;
-//           break;
-//         case 'L':
-//           maxWidth = 300;
-//           maxHeight = 320;
-//           break;
-//         default:
-//           maxWidth = 1920;
-//           maxHeight = 1080;
-//       }
-//       try {
-//         return ImageResizer.createResizedImage(photoUrl, maxWidth, maxHeight, 'JPEG', 100, 0, undefined);
-//       } catch (e) {
-//         console.log(e);
-//       }
-//     }
-//
-//     let uploadTask;
-//
-//     async function moveFirebaseFile(currentPath, destinationPath) {
-//       // let oldRef = await firebase.storage().ref().child(currentPath);
-//       // firebase.functions().httpsCallable('uploadFirebaseFile')({currentPath: currentPath, destinationPath: destinationPath})
-//       //   .then((res) => {
-//       //     console.log('res', res);
-//           // console.log('currentPath', currentPath);
-//           // console.log('destinationPath', destinationPath);
-//         // })
-//         // .catch((err) => {
-//         //   console.log('err', err.message);
-//         // });
-//       // await oldRef.delete();
-//     }
-//
-//     if (photo.file) {
-//       // const fileXS = await compression('XS');
-//       // const fileS = await compression('S');
-//       // const fileM = await compression('M');
-//       // const fileL = await compression('L');
-//       const file = await compression();
-//
-//       console.log('file compression', file);
-//
-//       // const compressedFileXS = await RNFetchBlob.fetch('GET', fileXS.uri);
-//       // const compressedFileS = await RNFetchBlob.fetch('GET', fileS.uri);
-//       // const compressedFileM = await RNFetchBlob.fetch('GET', fileM.uri);
-//       // const compressedFileL = await RNFetchBlob.fetch('GET', fileL.uri);
-//       // const compressedFile = await RNFetchBlob.fetch('GET', file.uri);
-//       //
-//       // console.log('compressedFileXS', compressedFileXS.base64());
-//       // console.log('compressedFileS', compressedFileS.base64());
-//       // console.log('compressedFileM', compressedFileM.base64());
-//       // console.log('compressedFileL', compressedFileL.base64());
-//       // console.log('compressedFile', compressedFile.base64());
-//
-//       // await storageRef.child(fullPathXS).put(compressedFileXS.base64());
-//       // await storageRef.child(fullPathS).put(compressedFileS.base64());
-//       // await storageRef.child(fullPathM).put(compressedFileM.base64());
-//       // await storageRef.child(fullPathL).put(compressedFileL.base64());
-//       // await storageRef.child(fullPath).put(compressedFile.base64());
-//       //
-//       // uploadTask = storageRef.child(fullPath).put(compressedFile.base64());
-//
-//       uploadTask.on('state_changed', (snapshot) => {
-//         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-//         dispatch({type: 'UPDATE_FILE_UPLOAD', data: {index, progress}});
-//         switch (snapshot.state) {
-//           case firebase.storage.TaskState.PAUSED: // or 'paused'
-//             break;
-//           case firebase.storage.TaskState.RUNNING: // or 'running'
-//             break;
-//         }
-//       });
-//       return uploadTask;
-//     } else {
-//       await moveFirebaseFile(photo.path, fullPath);
-//       // await moveFirebaseFile(photo.pathXS, fullPathXS);
-//       await moveFirebaseFile(photo.pathS, fullPathS);
-//       await moveFirebaseFile(photo.pathM, fullPathM);
-//       await moveFirebaseFile(photo.pathL, fullPathL);
-//       return Promise.resolve();
-//     }
-//   });
-//
-//   const uploads = await Promise.all(uploadTasks$);
-//   const paths = uploads.map((t) => t?.metadata?.fullPath);
-//
-//   // const userProfile = db.collection('users').doc(`${uid}`);
-//   newFormData.photos.forEach((photo, i) => {
-//     const subFolderName = photo.isPrivate ? 'private' : 'public';
-//     if (photo.file) {
-//       const fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.file.name}`;
-//       const fullPathS = `${uid}/${subFolderName}/S_shape_${photo.file.name}`;
-//       const fullPathM = `${uid}/${subFolderName}/M_shape_${photo.file.name}`;
-//       const fullPathL = `${uid}/${subFolderName}/L_shape_${photo.file.name}`;
-//
-//       photo.path = paths[i];
-//       photo.pathXS = fullPathXS;
-//       photo.pathS = fullPathS;
-//       photo.pathM = fullPathM;
-//       photo.pathL = fullPathL;
-//       delete photo['file'];
-//     } else {
-//       const photoIsExist = photo.path?.split('/')[1] === subFolderName;
-//       if (!photoIsExist) {
-//         photo.path = `${uid}/${subFolderName}/${photo.path?.split('/')[2]}`;
-//         photo.pathXS = `${uid}/${subFolderName}/XS_shape_${photo.path?.split('/')[2]}`;
-//         photo.pathS = `${uid}/${subFolderName}/S_shape_${photo.path?.split('/')[2]}`;
-//         photo.pathM = `${uid}/${subFolderName}/M_shape_${photo.path?.split('/')[2]}`;
-//         photo.pathL = `${uid}/${subFolderName}/L_shape_${photo.path?.split('/')[2]}`;
-//       }
-//     }
-//   });
-//
-//   if (newFormData.photos !== formData.photos) {
-//     dispatch({type: 'GET_USER_PHOTO_SUCCESS', data: {uid, photo: undefined}});
-//   }
-//
-//   // await userProfile.update({
-//   //   ...newFormData,
-//   //   profileSubmitted: needToSave,
-//   //   hasSeenNotification,
-//   //   id: uid
-//   // })
-//   //   .then(function () {
-//   //     if (needToSave) {
-//   //       dispatch({type: 'SAVE_PROFILE_DATA_SUCCESS'});
-//   //     }
-//   //   })
-//   //   .catch(function (error) {
-//   //     dispatch({type: 'SAVE_PROFILE_DATA_ERROR'});
-//   //     console.error('Error updating document: ', error);
-//   //   });
-// };
+export const saveProfileData = (formData) => async (dispatch) => {
+  dispatch({type: 'SAVE_PROFILE_DATA_IN_PROGRESS'});
+
+  const storageRef = storage().ref();
+
+  const db = firestore();
+  const {uid} = auth().currentUser;
+
+  const newFormData = {
+    ...formData,
+    dateOfBirth: convertDateToTimestamp(formData['birthday'])
+  };
+
+  const uploadTasks$ = newFormData.photos.map(async (photo, index) => {
+    const subFolderName = photo.isPrivate ? 'private' : 'public';
+    const photoIsExist = !photo.file && photo.path && (photo.path.split('/')[1] === subFolderName);
+    let fullPath,
+      fullPathXS,
+      fullPathS,
+      fullPathM,
+      fullPathL;
+
+    if (!photoIsExist) {
+      if (photo.file) {
+        fullPath = `${uid}/${subFolderName}/${photo.file.name}`;
+        fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.file.name}`;
+        fullPathS = `${uid}/${subFolderName}/S_shape_${photo.file.name}`;
+        fullPathM = `${uid}/${subFolderName}/M_shape_${photo.file.name}`;
+        fullPathL = `${uid}/${subFolderName}/L_shape_${photo.file.name}`;
+      } else {
+        fullPath = `${uid}/${subFolderName}/${photo.path.split('/')[2]}`;
+        fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.path.split('/')[2]}`;
+        fullPathS = `${uid}/${subFolderName}/S_shape_${photo.path.split('/')[2]}`;
+        fullPathM = `${uid}/${subFolderName}/M_shape_${photo.path.split('/')[2]}`;
+        fullPathL = `${uid}/${subFolderName}/L_shape_${photo.path.split('/')[2]}`;
+      }
+    } else {
+      fullPath = photo.path;
+      // fullPathXS = photo.pathXS;
+      fullPathS = photo.pathS;
+      fullPathM = photo.pathM;
+      fullPathL = photo.pathL;
+    }
+
+    if (photoIsExist) {
+      dispatch({type: 'UPDATE_FILE_UPLOAD', data: {index, progress: 100}});
+      return Promise.resolve();
+    }
+
+    const compression = async (size) => {
+      const photoUrl = URL.createObjectURL(photo.file);
+      let maxWidth, maxHeight;
+      switch (size) {
+        case 'XS':
+          maxWidth = 37;
+          maxHeight = 37;
+          break;
+        case 'S':
+          maxWidth = 70;
+          maxHeight = 70;
+          break;
+        case 'M':
+          maxWidth = 116;
+          maxHeight = 116;
+          break;
+        case 'L':
+          maxWidth = 300;
+          maxHeight = 320;
+          break;
+        default:
+          maxWidth = 1920;
+          maxHeight = 1080;
+      }
+      try {
+        return ImageResizer.createResizedImage(photoUrl, maxWidth, maxHeight, 'JPEG', 100, 0, undefined);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    let uploadTask;
+
+    async function moveFirebaseFile(currentPath, destinationPath) {
+      // let oldRef = await firebase.storage().ref().child(currentPath);
+      // firebase.functions().httpsCallable('uploadFirebaseFile')({currentPath: currentPath, destinationPath: destinationPath})
+      //   .then((res) => {
+      //     console.log('res', res);
+          // console.log('currentPath', currentPath);
+          // console.log('destinationPath', destinationPath);
+        // })
+        // .catch((err) => {
+        //   console.log('err', err.message);
+        // });
+      // await oldRef.delete();
+    }
+
+    if (photo.file) {
+      // const fileXS = await compression('XS');
+      // const fileS = await compression('S');
+      // const fileM = await compression('M');
+      // const fileL = await compression('L');
+      const file = await compression();
+
+      console.log('file compression', file);
+
+      // const compressedFileXS = await RNFetchBlob.fetch('GET', fileXS.uri);
+      // const compressedFileS = await RNFetchBlob.fetch('GET', fileS.uri);
+      // const compressedFileM = await RNFetchBlob.fetch('GET', fileM.uri);
+      // const compressedFileL = await RNFetchBlob.fetch('GET', fileL.uri);
+      // const compressedFile = await RNFetchBlob.fetch('GET', file.uri);
+      //
+      // console.log('compressedFileXS', compressedFileXS.base64());
+      // console.log('compressedFileS', compressedFileS.base64());
+      // console.log('compressedFileM', compressedFileM.base64());
+      // console.log('compressedFileL', compressedFileL.base64());
+      // console.log('compressedFile', compressedFile.base64());
+
+      // await storageRef.child(fullPathXS).put(compressedFileXS.base64());
+      // await storageRef.child(fullPathS).put(compressedFileS.base64());
+      // await storageRef.child(fullPathM).put(compressedFileM.base64());
+      // await storageRef.child(fullPathL).put(compressedFileL.base64());
+      // await storageRef.child(fullPath).put(compressedFile.base64());
+      //
+      // uploadTask = storageRef.child(fullPath).put(compressedFile.base64());
+
+      uploadTask.on('state_changed', (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        dispatch({type: 'UPDATE_FILE_UPLOAD', data: {index, progress}});
+        switch (snapshot.state) {
+          case firebase.storage.TaskState.PAUSED: // or 'paused'
+            break;
+          case firebase.storage.TaskState.RUNNING: // or 'running'
+            break;
+        }
+      });
+      return uploadTask;
+    } else {
+      await moveFirebaseFile(photo.path, fullPath);
+      // await moveFirebaseFile(photo.pathXS, fullPathXS);
+      await moveFirebaseFile(photo.pathS, fullPathS);
+      await moveFirebaseFile(photo.pathM, fullPathM);
+      await moveFirebaseFile(photo.pathL, fullPathL);
+      return Promise.resolve();
+    }
+  });
+
+  const uploads = await Promise.all(uploadTasks$);
+  const paths = uploads.map((t) => t && t.metadata ? t.metadata.fullPath : '');
+
+  // const userProfile = db.collection('users').doc(`${uid}`);
+  newFormData.photos.forEach((photo, i) => {
+    const subFolderName = photo.isPrivate ? 'private' : 'public';
+    if (photo.file) {
+      const fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.file.name}`;
+      const fullPathS = `${uid}/${subFolderName}/S_shape_${photo.file.name}`;
+      const fullPathM = `${uid}/${subFolderName}/M_shape_${photo.file.name}`;
+      const fullPathL = `${uid}/${subFolderName}/L_shape_${photo.file.name}`;
+
+      photo.path = paths[i];
+      photo.pathXS = fullPathXS;
+      photo.pathS = fullPathS;
+      photo.pathM = fullPathM;
+      photo.pathL = fullPathL;
+      delete photo['file'];
+    } else {
+      const photoIsExist = photo.path.split('/')[1] === subFolderName;
+      if (!photoIsExist) {
+        photo.path = `${uid}/${subFolderName}/${photo.path?.split('/')[2]}`;
+        photo.pathXS = `${uid}/${subFolderName}/XS_shape_${photo.path?.split('/')[2]}`;
+        photo.pathS = `${uid}/${subFolderName}/S_shape_${photo.path?.split('/')[2]}`;
+        photo.pathM = `${uid}/${subFolderName}/M_shape_${photo.path?.split('/')[2]}`;
+        photo.pathL = `${uid}/${subFolderName}/L_shape_${photo.path?.split('/')[2]}`;
+      }
+    }
+  });
+
+  if (newFormData.photos !== formData.photos) {
+    dispatch({type: 'GET_USER_PHOTO_SUCCESS', data: {uid, photo: undefined}});
+  }
+
+  // await userProfile.update({
+  //   ...newFormData,
+  //   profileSubmitted: needToSave,
+  //   hasSeenNotification,
+  //   id: uid
+  // })
+  //   .then(function () {
+  //     if (needToSave) {
+  //       dispatch({type: 'SAVE_PROFILE_DATA_SUCCESS'});
+  //     }
+  //   })
+  //   .catch(function (error) {
+  //     dispatch({type: 'SAVE_PROFILE_DATA_ERROR'});
+  //     console.error('Error updating document: ', error);
+  //   });
+};
 //
 // export const setEmailForResetPassword = (email, lang) => async (dispatch) => {
 //   dispatch({type: 'SET_EMAIL_FOR_RESET_PASSWORD_IN_PROGRESS'});
@@ -367,31 +365,30 @@
 //     });
 // };
 //
-// export const getAuthUserDateRequests = (uid) => async (dispatch, getState) => {
-//   const db = firebase.firestore();
-//   const state = getState();
-//   const authRequests = state.profile.authRequests;
-//   const authRequestsIsExists = !!authRequests.length;
-//
-//   if (authRequestsIsExists) {
-//     return authRequests;
-//   }
-//   return await db.collection('dating-requests')
-//     .where('userId', '==', uid)
-//     .where('status', '!=', 'deleted')
-//     .get()
-//     .then((data) => {
-//       const requests = [];
-//       data.forEach((doc) => {
-//         requests.push({...doc.data(), id: doc.id});
-//       })
-//       dispatch({type: 'SAVE_AUTH_DATE_REQUEST_SUCCESS', data: requests});
-//       return requests;
-//     })
-//     .catch((err) => {
-//       console.log(err.message)
-//     });
-// }
+export const getAuthUserDateRequests = (uid) => async (dispatch, getState) => {
+  const state = getState();
+  const { authRequests } = state.profile;
+  const authRequestsIsExists = !!authRequests.length;
+
+  if (authRequestsIsExists) return authRequests;
+
+  return firestore().collection('dating-requests')
+    .where('userId', '==', uid)
+    .where('status', '!=', 'deleted')
+    .get()
+    .then((data) => {
+      const requests = [];
+      data.forEach((doc) => {
+        requests.push({ ...doc.data(), id: doc.id });
+      });
+      dispatch({ type: 'SAVE_AUTH_DATE_REQUEST_SUCCESS', data: requests });
+      return requests;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
+
 //
 // export const updateDateRequest = (request) => async (dispatch, getState) => {
 //   const db = firebase.firestore();
@@ -424,52 +421,45 @@
 //     });
 // };
 //
-// export const getDateOffers = (uid) => async (dispatch, getState) => {
-//   const db = firebase.firestore();
-//   const state = getState();
-//
-//   return await db.collection('dating-offers')
-//     .where('users', 'array-contains', uid)
-//     .get()
-//     .then(async (data) => {
-//       let offers = [];
-//
-//       data.forEach((doc) => {
-//         offers.push(doc.data());
-//       })
-//
-//       if (offers.length) {
-//         const acceptedOffers = offers.filter((o) => o.status === 'accepted');
-//         const offersUsers = acceptedOffers.map((o) => o.user1 === uid ? o.user2 : o.user1);
-//
-//         let users = {};
-//
-//         for (let user of offersUsers) {
-//           try {
-//             const profile = await dispatch(getUser(user));
-//             if (profile) {
-//               users[profile.id] = profile;
-//             }
-//           } catch (e) {
-//             console.log(e);
-//           }
-//         }
-//
-//         const filteredAcceptedOffers = acceptedOffers.filter(o => {
-//           const companionId = o.user1 === uid ? o.user2 : o.user1;
-//           return Object.keys(users).includes(companionId) && users[companionId].role !== 'deleted';
-//         })
-//
-//         return {offers: filteredAcceptedOffers, users}
-//       } else {
-//         return {offers: [], users: {}};
-//       }
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//       return {offers: [], users: {}};
-//     })
-// }
+export const getDateOffers = (uid) => async (dispatch) => firestore().collection('dating-offers')
+  .where('users', 'array-contains', uid)
+  .get()
+  .then(async (data) => {
+    const offers = [];
+
+    data.forEach((doc) => {
+      offers.push(doc.data());
+    });
+
+    if (offers.length) {
+      const acceptedOffers = offers.filter((o) => o.status === 'accepted');
+      const offersUsers = acceptedOffers.map((o) => (o.user1 === uid ? o.user2 : o.user1));
+
+      const users = {};
+
+      const usersPromises = offersUsers.map((user) => dispatch(getUser(user)));
+      await Promise.all(usersPromises)
+        .then((promises) => {
+          promises.forEach((profile) => {
+            if (profile) users[profile.id] = profile;
+          });
+        })
+        .catch((e) => console.log(e));
+
+      const filteredAcceptedOffers = acceptedOffers.filter((o) => {
+        const { user1, user2 } = o;
+        const companionId = user1 === uid ? user2 : user1;
+        return Object.keys(users).includes(companionId) && users[companionId].role !== 'deleted';
+      });
+
+      return { offers: filteredAcceptedOffers, users };
+    }
+    return { offers: [], users: {} };
+  })
+  .catch((err) => {
+    console.log(err);
+    return { offers: [], users: {} };
+  });
 //
 // export const onDateOffers = () => async (dispatch, getState) => {
 //   const db = firebase.firestore();

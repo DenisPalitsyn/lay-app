@@ -85,8 +85,8 @@ export default function Login({ navigation }) {
       await signInWithGoogle();
     } catch (e) {
       errorHandler(e.message, 'common');
+      setIsSigninInProgress(false);
     }
-    setIsSigninInProgress(false);
   };
 
   const signUpLink = () => {
