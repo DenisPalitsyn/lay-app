@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react';
 import {
-  Picker, SafeAreaView, ScrollView, StyleSheet, View,
+  SafeAreaView, ScrollView, StyleSheet, View,
 } from 'react-native';
+import { Picker as SelectPicker } from '@react-native-community/picker';
 import { Text, TextInput, Button } from 'react-native-paper';
 import { LocalisationContext } from '../../../../localisation/context';
 
@@ -47,23 +48,23 @@ export default function Settings() {
           {changeLanguageText}
         </Text>
         <View style={[styles.picker, styles.mb]}>
-          <Picker
+          <SelectPicker
             selectedValue={selectedValue}
             onValueChange={(itemValue) => setSelectedValue(itemValue)}
           >
-            <Picker.Item
+            <SelectPicker.Item
               label={profileLanguagesOptions[0].title}
               value={profileLanguagesOptions[0].value}
             />
-            <Picker.Item
+            <SelectPicker.Item
               label={profileLanguagesOptions[1].title}
               value={profileLanguagesOptions[1].value}
             />
-            <Picker.Item
+            <SelectPicker.Item
               label={profileLanguagesOptions[2].title}
               value={profileLanguagesOptions[2].value}
             />
-          </Picker>
+          </SelectPicker>
         </View>
         <Button
           mode="contained"

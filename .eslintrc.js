@@ -16,6 +16,8 @@ module.exports = {
         'no-console': 'off',
         'import/named': 'off',
         'no-shadow': 'off',
+        'react/no-array-index-key': 'off',
+        'no-param-reassign': 'off',
       },
     },
   ],

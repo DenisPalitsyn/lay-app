@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-community/picker';
+import { Picker as SelectPicker } from '@react-native-community/picker';
 import { LocalisationContext } from '../../../../localisation/context';
 
 export default function AddPromo() {
@@ -90,15 +90,15 @@ export default function AddPromo() {
         )}
         <Text style={[styles.text, styles.mb]}>{whyLocation}</Text>
         <View style={[styles.picker, styles.mb]}>
-          <Picker
+          <SelectPicker
             selectedValue={selectedValue}
             onValueChange={(itemValue) => setSelectedValue(itemValue)}
           >
-            <Picker.Item label={location[0].title} value={location[0].value} />
-            <Picker.Item label={location[1].title} value={location[1].value} />
-            <Picker.Item label={location[2].title} value={location[2].value} />
-            <Picker.Item label={location[3].title} value={location[3].value} />
-          </Picker>
+            <SelectPicker.Item label={location[0].title} value={location[0].value} />
+            <SelectPicker.Item label={location[1].title} value={location[1].value} />
+            <SelectPicker.Item label={location[2].title} value={location[2].value} />
+            <SelectPicker.Item label={location[3].title} value={location[3].value} />
+          </SelectPicker>
         </View>
         <Button
           mode="contained"

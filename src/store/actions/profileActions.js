@@ -1,11 +1,11 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import storage from '@react-native-firebase/storage';
-import { profileData } from '../../constants/profile';
-import {convertDateToTimestamp} from "../../utils/profile";
-// import {initPhotoObj} from "../../constants/initialState";
-import { getAllUsers, getUser } from './usersActions';
 import ImageResizer from 'react-native-image-resizer';
+import { profileData } from '../../constants/profile';
+import { convertDateToTimestamp } from '../../utils/profile';
+import { initPhotoObj } from '../../constants/initialState';
+import { getAllUsers, getUser } from './usersActions';
 // // import mixpanel from "mixpanel-browser";
 // import firebase from "firebase/app";
 // // import RNFetchBlob from 'rn-fetch-blob';
@@ -49,110 +49,103 @@ export const getProfileData = (uid) => (dispatch, getState) => {
     });
 };
 
-// export const getPhotosUrl = async (
-//   firebase,
-//   photos,
-//   isUser,
-//   isModerator = false,
-//   size
-// ) => {
-//   const publicPhotos = [...photos].map(p =>
-//     p.isPrivate ? ({
-//       path: '',
-//       pathS: '',
-//       pathM: '',
-//       pathL: '',
-//       isPrivate: true
-//     }) : p
-//   );
-//
-//   const filteredPhotos = (isUser || isModerator) ? photos : publicPhotos;
-//   const paths = filteredPhotos.map((photo) => {
-//     switch (size) {
-//       case 'S':
-//         return photo.pathS;
-//       case 'M':
-//         return photo.pathM;
-//       case 'L':
-//         return photo.pathL;
-//       case 'BIG':
-//         return photo.path;
-//       default:
-//         return photo.path;
-//     }
-//   });
-//
-//   const downloadUrls = [];
-//
-//   for (let path of paths) {
-//     if (path) {
-//       const url = await firebase.storage().ref().child(path).getDownloadURL();
-//       downloadUrls.push(url);
-//     } else {
-//       downloadUrls.push('');
-//     }
-//   }
-//
-//   return downloadUrls;
-// }
-//
-// export const getGalleryPhotos = (uid, size = 'BIG') => async (dispatch, getState) => {
-//   const state = getState();
-//   const isModerator = state.profile.isModerator;
-//   const isUser = firebase.auth().currentUser.uid === uid;
-//   const users = getAllUsers(state);
-//   const user = users[uid];
-//   const photos = user ? user.photos : [];
-//   const photosExists = Boolean(photos.length);
-//
-//   const photoIndex = size.toLowerCase();
-//   const stateGalleryPhotos = state.profile.photos[uid] ?
-//     {
-//       ...initPhotoObj,
-//       ...state.profile.photos[uid]
-//     } : initPhotoObj;
-//   // const galleryPhotos = stateGalleryPhotos[photoIndex];
-//
-//   // const galleryPhotosIsExists = galleryPhotos !== undefined;
-//   // console.log('galleryPhotosIsExists', galleryPhotosIsExists)
-//   // if (galleryPhotosIsExists) {
-//   //   return galleryPhotos;
-//   // }
-//   if (photosExists) {
-//     const downloadUrls = await getPhotosUrl(firebase, photos, isUser, isModerator, size);
-//
-//     const downloadUrlsObj = {
-//       ...stateGalleryPhotos,
-//       [photoIndex]: downloadUrls
-//     };
-//
-//     dispatch({type: 'GET_DOWNLOAD_URLS_SUCCESS', data: {downloadUrls: downloadUrlsObj, uid}});
-//     return downloadUrls;
-//   }
-//   return [];
-// }
-//
+export const getPhotosUrl = async (
+  photos,
+  isUser,
+  isModerator = false,
+  size,
+) => {
+  const publicPhotos = [...photos].map((p) => (p.isPrivate ? ({
+    path: '',
+    pathS: '',
+    pathM: '',
+    pathL: '',
+    isPrivate: true,
+  }) : p));
+
+  const filteredPhotos = (isUser || isModerator) ? photos : publicPhotos;
+  const paths = filteredPhotos.map((photo) => {
+    switch (size) {
+      case 'S':
+        return photo.pathS;
+      case 'M':
+        return photo.pathM;
+      case 'L':
+        return photo.pathL;
+      case 'BIG':
+        return photo.path;
+      default:
+        return photo.path;
+    }
+  });
+
+  const downloadUrls = [];
+
+  const pathsPromises = paths.map((path) => (path ? storage().ref().child(path).getDownloadURL() : ''));
+
+  await Promise.all(pathsPromises).then((urls) => {
+    urls.forEach((url) => {
+      downloadUrls.push(url);
+    });
+  });
+
+  return downloadUrls;
+};
+
+export const getGalleryPhotos = (uid, size = 'BIG') => async (dispatch, getState) => {
+  const state = getState();
+  const { isModerator } = state.profile;
+  const isUser = auth().currentUser.uid === uid;
+  const users = getAllUsers(state);
+  const user = users[uid];
+  const photos = user ? user.photos : [];
+  const photosExists = Boolean(photos.length);
+
+  const photoIndex = size.toLowerCase();
+  const stateGalleryPhotos = state.profile.photos[uid]
+    ? {
+      ...initPhotoObj,
+      ...state.profile.photos[uid],
+    } : initPhotoObj;
+  const galleryPhotos = stateGalleryPhotos[photoIndex];
+
+  if (galleryPhotos) return galleryPhotos;
+
+  if (photosExists) {
+    const downloadUrls = await getPhotosUrl(photos, isUser, isModerator, size);
+
+    const downloadUrlsObj = {
+      ...stateGalleryPhotos,
+      [photoIndex]: downloadUrls,
+    };
+
+    dispatch({ type: 'GET_DOWNLOAD_URLS_SUCCESS', data: { downloadUrls: downloadUrlsObj, uid } });
+    return downloadUrls;
+  }
+  return [];
+};
+
 export const saveProfileData = (formData) => async (dispatch) => {
-  dispatch({type: 'SAVE_PROFILE_DATA_IN_PROGRESS'});
+  dispatch({ type: 'SAVE_PROFILE_DATA_IN_PROGRESS' });
 
   const storageRef = storage().ref();
 
   const db = firestore();
-  const {uid} = auth().currentUser;
+  const { uid } = auth().currentUser;
 
   const newFormData = {
     ...formData,
-    dateOfBirth: convertDateToTimestamp(formData['birthday'])
+    dateOfBirth: convertDateToTimestamp(formData.birthday),
   };
 
   const uploadTasks$ = newFormData.photos.map(async (photo, index) => {
     const subFolderName = photo.isPrivate ? 'private' : 'public';
     const photoIsExist = !photo.file && photo.path && (photo.path.split('/')[1] === subFolderName);
-    let fullPath,
-      fullPathXS,
-      fullPathS,
-      fullPathM,
-      fullPathL;
+    let fullPath;
+    let fullPathXS;
+    let fullPathS;
+    let fullPathM;
+    let fullPathL;
 
     if (!photoIsExist) {
       if (photo.file) {
@@ -163,7 +156,7 @@ export const saveProfileData = (formData) => async (dispatch) => {
         fullPathL = `${uid}/${subFolderName}/L_shape_${photo.file.name}`;
       } else {
         fullPath = `${uid}/${subFolderName}/${photo.path.split('/')[2]}`;
-        fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.path.split('/')[2]}`;
+        // fullPathXS = `${uid}/${subFolderName}/XS_shape_${photo.path.split('/')[2]}`;
         fullPathS = `${uid}/${subFolderName}/S_shape_${photo.path.split('/')[2]}`;
         fullPathM = `${uid}/${subFolderName}/M_shape_${photo.path.split('/')[2]}`;
         fullPathL = `${uid}/${subFolderName}/L_shape_${photo.path.split('/')[2]}`;
@@ -177,13 +170,14 @@ export const saveProfileData = (formData) => async (dispatch) => {
     }
 
     if (photoIsExist) {
-      dispatch({type: 'UPDATE_FILE_UPLOAD', data: {index, progress: 100}});
+      dispatch({ type: 'UPDATE_FILE_UPLOAD', data: { index, progress: 100 } });
       return Promise.resolve();
     }
 
     const compression = async (size) => {
       const photoUrl = URL.createObjectURL(photo.file);
-      let maxWidth, maxHeight;
+      let maxWidth; let
+        maxHeight;
       switch (size) {
         case 'XS':
           maxWidth = 37;
@@ -209,8 +203,9 @@ export const saveProfileData = (formData) => async (dispatch) => {
         return ImageResizer.createResizedImage(photoUrl, maxWidth, maxHeight, 'JPEG', 100, 0, undefined);
       } catch (e) {
         console.log(e);
+        return undefined;
       }
-    }
+    };
 
     let uploadTask;
 
@@ -219,12 +214,12 @@ export const saveProfileData = (formData) => async (dispatch) => {
       // firebase.functions().httpsCallable('uploadFirebaseFile')({currentPath: currentPath, destinationPath: destinationPath})
       //   .then((res) => {
       //     console.log('res', res);
-          // console.log('currentPath', currentPath);
-          // console.log('destinationPath', destinationPath);
-        // })
-        // .catch((err) => {
-        //   console.log('err', err.message);
-        // });
+      // console.log('currentPath', currentPath);
+      // console.log('destinationPath', destinationPath);
+      // })
+      // .catch((err) => {
+      //   console.log('err', err.message);
+      // });
       // await oldRef.delete();
     }
 
@@ -259,27 +254,28 @@ export const saveProfileData = (formData) => async (dispatch) => {
 
       uploadTask.on('state_changed', (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        dispatch({type: 'UPDATE_FILE_UPLOAD', data: {index, progress}});
+        dispatch({ type: 'UPDATE_FILE_UPLOAD', data: { index, progress } });
         switch (snapshot.state) {
-          case firebase.storage.TaskState.PAUSED: // or 'paused'
+          case storage.TaskState.PAUSED: // or 'paused'
             break;
-          case firebase.storage.TaskState.RUNNING: // or 'running'
+          case storage.TaskState.RUNNING: // or 'running'
+            break;
+          default:
             break;
         }
       });
       return uploadTask;
-    } else {
-      await moveFirebaseFile(photo.path, fullPath);
-      // await moveFirebaseFile(photo.pathXS, fullPathXS);
-      await moveFirebaseFile(photo.pathS, fullPathS);
-      await moveFirebaseFile(photo.pathM, fullPathM);
-      await moveFirebaseFile(photo.pathL, fullPathL);
-      return Promise.resolve();
     }
+    await moveFirebaseFile(photo.path, fullPath);
+    // await moveFirebaseFile(photo.pathXS, fullPathXS);
+    await moveFirebaseFile(photo.pathS, fullPathS);
+    await moveFirebaseFile(photo.pathM, fullPathM);
+    await moveFirebaseFile(photo.pathL, fullPathL);
+    return Promise.resolve();
   });
 
   const uploads = await Promise.all(uploadTasks$);
-  const paths = uploads.map((t) => t && t.metadata ? t.metadata.fullPath : '');
+  const paths = uploads.map((t) => (t && t.metadata ? t.metadata.fullPath : ''));
 
   // const userProfile = db.collection('users').doc(`${uid}`);
   newFormData.photos.forEach((photo, i) => {
@@ -295,21 +291,21 @@ export const saveProfileData = (formData) => async (dispatch) => {
       photo.pathS = fullPathS;
       photo.pathM = fullPathM;
       photo.pathL = fullPathL;
-      delete photo['file'];
+      delete photo.file;
     } else {
       const photoIsExist = photo.path.split('/')[1] === subFolderName;
       if (!photoIsExist) {
-        photo.path = `${uid}/${subFolderName}/${photo.path?.split('/')[2]}`;
-        photo.pathXS = `${uid}/${subFolderName}/XS_shape_${photo.path?.split('/')[2]}`;
-        photo.pathS = `${uid}/${subFolderName}/S_shape_${photo.path?.split('/')[2]}`;
-        photo.pathM = `${uid}/${subFolderName}/M_shape_${photo.path?.split('/')[2]}`;
-        photo.pathL = `${uid}/${subFolderName}/L_shape_${photo.path?.split('/')[2]}`;
+        photo.path = `${uid}/${subFolderName}/${photo.path.split('/')[2]}`;
+        photo.pathXS = `${uid}/${subFolderName}/XS_shape_${photo.path.split('/')[2]}`;
+        photo.pathS = `${uid}/${subFolderName}/S_shape_${photo.path.split('/')[2]}`;
+        photo.pathM = `${uid}/${subFolderName}/M_shape_${photo.path.split('/')[2]}`;
+        photo.pathL = `${uid}/${subFolderName}/L_shape_${photo.path.split('/')[2]}`;
       }
     }
   });
 
   if (newFormData.photos !== formData.photos) {
-    dispatch({type: 'GET_USER_PHOTO_SUCCESS', data: {uid, photo: undefined}});
+    dispatch({ type: 'GET_USER_PHOTO_SUCCESS', data: { uid, photo: undefined } });
   }
 
   // await userProfile.update({
